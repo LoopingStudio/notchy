@@ -7,46 +7,46 @@
 
 /// Small Spaces API wrapper.
 public final class CGSSpace {
-    private let identifier: CGSSpaceID
-    private let createdByInit: Bool
+  private let identifier: CGSSpaceID
+  private let createdByInit: Bool
 
-    public var windows: Set<NSWindow> = [] {
-        didSet {
-            let remove = oldValue.subtracting(self.windows)
-            let add = self.windows.subtracting(oldValue)
+  public var windows: Set<NSWindow> = [] {
+    didSet {
+      let remove = oldValue.subtracting(self.windows)
+      let add = self.windows.subtracting(oldValue)
 
-            CGSRemoveWindowsFromSpaces(_CGSDefaultConnection(),
-                                       remove.map { $0.windowNumber } as NSArray,
-                                       [self.identifier])
-            CGSAddWindowsToSpaces(_CGSDefaultConnection(),
-                                  add.map { $0.windowNumber } as NSArray,
-                                  [self.identifier])
-        }
+      CGSRemoveWindowsFromSpaces(_CGSDefaultConnection(),
+                                 remove.map { $0.windowNumber } as NSArray,
+                                 [self.identifier])
+      CGSAddWindowsToSpaces(_CGSDefaultConnection(),
+                            add.map { $0.windowNumber } as NSArray,
+                            [self.identifier])
     }
+  }
 
-    /// Initialized `CGSSpace`s *MUST* be de-initialized upon app exit!
-    public init(level: Int = 0) {
-        let flag = 0x1 // this value MUST be 1, otherwise, Finder decides to draw desktop icons
-        self.identifier = CGSSpaceCreate(_CGSDefaultConnection(), flag, nil)
-        CGSSpaceSetAbsoluteLevel(_CGSDefaultConnection(), self.identifier, level)
-        CGSShowSpaces(_CGSDefaultConnection(), [self.identifier])
-        self.createdByInit = true // Mark as created by the first init
-    }
+  /// Initialized `CGSSpace`s *MUST* be de-initialized upon app exit!
+  public init(level: Int = 0) {
+    let flag = 0x1 // this value MUST be 1, otherwise, Finder decides to draw desktop icons
+    self.identifier = CGSSpaceCreate(_CGSDefaultConnection(), flag, nil)
+    CGSSpaceSetAbsoluteLevel(_CGSDefaultConnection(), self.identifier, level)
+    CGSShowSpaces(_CGSDefaultConnection(), [self.identifier])
+    self.createdByInit = true // Mark as created by the first init
+  }
 
-    public init(id: UInt64) {
-        let flag = 0x1 // this value MUST be 1, otherwise, Finder decides to draw desktop icons
-        self.identifier = id
-        CGSShowSpaces(_CGSDefaultConnection(), [self.identifier])
-        self.createdByInit = false // Mark as created externally
-    }
+  public init(id: UInt64) {
+    let flag = 0x1 // this value MUST be 1, otherwise, Finder decides to draw desktop icons
+    self.identifier = id
+    CGSShowSpaces(_CGSDefaultConnection(), [self.identifier])
+    self.createdByInit = false // Mark as created externally
+  }
 
-    deinit {
-        CGSHideSpaces(_CGSDefaultConnection(), [self.identifier])
-        // Only call CGSSpaceDestroy if the space was created by the first init
-        if createdByInit {
-            CGSSpaceDestroy(_CGSDefaultConnection(), self.identifier)
-        }
+  deinit {
+    CGSHideSpaces(_CGSDefaultConnection(), [self.identifier])
+    // Only call CGSSpaceDestroy if the space was created by the first init
+    if createdByInit {
+      CGSSpaceDestroy(_CGSDefaultConnection(), self.identifier)
     }
+  }
 }
 
 // CGSSpace stuff:
